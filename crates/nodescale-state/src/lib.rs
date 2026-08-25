@@ -1355,7 +1355,7 @@ impl StateStore {
                 tx.execute("UPDATE n4_join_session_dispatches SET dispatch_state=?2,resolved_at_ms=COALESCE(resolved_at_ms,?3) WHERE invitation_id=?1 AND dispatch_state IN ('reserved','failed_pre_dispatch','failed_no_apply','revocation_pending')", params![invitation_id.to_string(), terminal_dispatch, now.timestamp_millis()])?;
             }
             tx.execute(match intent { N4CleanupIntent::Revoked => "UPDATE n4_invitation_details SET revoked_at_ms=?2,revision=revision+1 WHERE invitation_id=?1", N4CleanupIntent::Expired => "UPDATE n4_invitation_details SET expired_at_ms=?2,revision=revision+1 WHERE invitation_id=?1" }, params![invitation_id.to_string(), now.timestamp_millis()])?;
-            store.append_n4_audit(tx, invitation_id, None, &format!("invitation:{}:{:?}", invitation_id, intent), actor, match intent { N4CleanupIntent::Revoked => "invitation_revoked", N4CleanupIntent::Expired => "invitation_expired" }, "success", &SanitizedMetadata::empty())?;
+            store.append_n4_audit(tx, invitation_id, None, &format!("invitation:{invitation_id}:{intent:?}"), actor, match intent { N4CleanupIntent::Revoked => "invitation_revoked", N4CleanupIntent::Expired => "invitation_expired" }, "success", &SanitizedMetadata::empty())?;
             Ok(target)
         })
     }
