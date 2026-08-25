@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  RUSTUP_TOOLCHAIN: "1.85.1"
+
 jobs:
   rust:
     runs-on: ubuntu-latest
@@ -26,6 +29,11 @@ jobs:
         with:
           toolchain: 1.85.1
           components: rustfmt, clippy
+      - name: Verify pinned Rust toolchain
+        run: |
+          rustc --version | grep -F 'rustc 1.85.1'
+          cargo --version
+          clippy-driver --version | grep -F 'clippy 0.1.85'
       - uses: Swatinem/rust-cache@v2
       - name: Metadata
         run: cargo metadata --locked --no-deps --format-version 1 > /dev/null
