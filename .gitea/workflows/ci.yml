@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  RUSTUP_TOOLCHAIN: "1.85.1"
+  RUSTUP_TOOLCHAIN: "1.88.0"
 
 jobs:
   rust:
@@ -27,13 +27,13 @@ jobs:
           git config --global url."http://hermes:${ECOSYSTEM_READ_TOKEN}@${ECOSYSTEM_GIT_HOST}/hermes/".insteadOf "https://github.com/Dadmin88/"
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.85.1
+          toolchain: 1.88.0
           components: rustfmt, clippy
       - name: Verify pinned Rust toolchain
         run: |
-          rustc --version | grep -F 'rustc 1.85.1'
+          rustc --version | grep -F 'rustc 1.88.0'
           cargo --version
-          clippy-driver --version | grep -F 'clippy 0.1.85'
+          clippy-driver --version | grep -F 'clippy 0.1.88'
       - uses: Swatinem/rust-cache@v2
       - name: Metadata
         run: cargo metadata --locked --no-deps --format-version 1 > /dev/null
