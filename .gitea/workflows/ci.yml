@@ -1,0 +1,48 @@
+name: Rust CI (Gitea)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure private Gitea dependency mirror
+        env:
+          ECOSYSTEM_READ_TOKEN: ${{ secrets.ECOSYSTEM_READ_TOKEN }}
+          ECOSYSTEM_GIT_HOST: ${{ secrets.ECOSYSTEM_GIT_HOST }}
+        run: |
+          test -n "$ECOSYSTEM_READ_TOKEN"
+          test -n "$ECOSYSTEM_GIT_HOST"
+          git config --global url."http://hermes:${ECOSYSTEM_READ_TOKEN}@${ECOSYSTEM_GIT_HOST}/hermes/".insteadOf "https://github.com/Dadmin88/"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Metadata
+        run: cargo metadata --locked --no-deps --format-version 1 > /dev/null
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test workspace
+        run: cargo test --workspace --locked
+      - name: Test SQLite migrations and state
+        run: cargo test -p nodescale-state --test state --locked
+      - name: Build
+        run: cargo build --workspace --locked
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Public repository hygiene fixtures
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest -v scripts/tests/test_check_public_hygiene.py
+      - name: Public repository hygiene
+        run: |
+          tree="$(git rev-parse 'HEAD^{tree}')"
+          python3 scripts/check_public_hygiene.py --repo "$GITHUB_WORKSPACE" --tree "$tree"
