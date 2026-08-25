@@ -24,6 +24,7 @@ jobs:
           git config --global url."http://hermes:${ECOSYSTEM_READ_TOKEN}@${ECOSYSTEM_GIT_HOST}/hermes/".insteadOf "https://github.com/Dadmin88/"
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.85.1
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Metadata
